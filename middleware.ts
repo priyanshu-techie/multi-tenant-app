@@ -34,11 +34,16 @@ export default async function middleware(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams.toString();
   // Get the pathname of the request (e.g. /, /about, /blog/first-post)
-  const path = `${url.pathname}${
-    searchParams.length > 0 ? `?${searchParams}` : ""
-  }`;
+  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
 
   // rewrites for app pages
+  // if you go to the app then rewrite to /app/the  path you wnatted
+
+  // lets say i am in app.vercel.pub, which is this apps original url hosted somewhere
+  // but what is it doing it is rewriting the content to /app/whatever is the path, 
+  // without changnig the ulr,
+  // let say i am in app.vercel.pub/site/setting , it will rewrite the content to
+  // app.vercel.pub/app/site/setting
   if (hostname == `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
     const session = await getToken({ req });
     if (!session && path !== "/login") {
@@ -52,6 +57,7 @@ export default async function middleware(req: NextRequest) {
   }
 
   // special case for `vercel.pub` domain
+  // if  not going to the app subdomain, then redirect to the blog
   if (hostname === "vercel.pub") {
     return NextResponse.redirect(
       "https://vercel.com/blog/platforms-starter-kit",
@@ -71,3 +77,5 @@ export default async function middleware(req: NextRequest) {
   // rewrite everything else to `/[domain]/[slug] dynamic route
   return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
 }
+
+// the url here is just a text and doesnt mean exactly the url we are manipulating using rewrites in the middleware
